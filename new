@@ -1,0 +1,47 @@
+import React, { useEffect, useState } from 'react';
+
+const LogoutTimer = () => {
+  const [isActive, setIsActive] = useState(true);
+
+  useEffect(() => {
+    let timeout;
+
+    const resetTimer = () => {
+      if (isActive) {
+        clearTimeout(timeout);
+        timeout = setTimeout(logout, 30 * 60 * 1000); // 30 minutes
+      }
+    };
+
+    const logout = () => {
+      // Redirect to logout URL or perform logout action
+      window.location.href = '/logout'; // Replace '/logout' with your actual logout URL
+    };
+
+    const events = ['load', 'mousemove', 'mousedown', 'click', 'scroll', 'keypress'];
+
+    const resetTimerEvents = () => {
+      events.forEach(event => {
+        window.addEventListener(event, resetTimer);
+      });
+    };
+
+    resetTimer();
+    resetTimerEvents();
+
+    return () => {
+      clearTimeout(timeout);
+      events.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [isActive]);
+
+  return (
+    <div>
+      {/* Your app content */}
+    </div>
+  );
+};
+
+export default LogoutTimer;
