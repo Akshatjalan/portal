@@ -1,39 +1,36 @@
-import React, { useState } from 'react';
+const handleConvert = async () => {
+  if (!file) {
+    console.error('No file selected');
+    return;
+  }
 
-const FileUploadComponent = () => {
-  const [file, setFile] = useState(null);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
 
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-  };
+    // Call the FastAPI endpoint to convert Excel to CSV using Fetch API
+    const response = await fetch('http://localhost:8000/convert', {
+      method: 'POST',
+      body: formData,
+    });
 
-  const handleUpload = () => {
-    if (file) {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      fetch('http://your-fastapi-service-url/upload-file/', {
-        method: 'POST',
-        body: formData,
-      })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Upload successful:', data);
-        })
-        .catch(error => {
-          console.error('Error uploading file:', error);
-        });
-    } else {
-      console.warn('No file selected.');
+    // Check if the response is successful
+    if (!response.ok) {
+      throw new Error(Network response was not ok: ${response.statusText});
     }
-  };
 
-  return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
-    </div>
-  );
+    // Get the response data as a blob
+    const blob = await response.blob();
+
+    // Create a download link and trigger a download
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = 'result.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error('Error converting Excel to CSV:', error);
+    // Handle errors or display a user-friendly message
+  }
 };
-
-export default FileUploadComponent;
