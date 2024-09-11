@@ -1,36 +1,5 @@
-const handleConvert = async () => {
-  if (!file) {
-    console.error('No file selected');
-    return;
-  }
+**Automating Python 2 to Python 3 Migration with Neural Machine Translation (NMT)**
 
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
+Migrating from Python 2 to Python 3 can be complex due to significant syntax changes, library updates, and deprecated features. Traditionally, this process is manual, time-consuming, and prone to errors. While tools like `2to3` can assist with basic transformations, they often miss more complex adjustments. To address these challenges, we can leverage Neural Machine Translation (NMT) models. By training an NMT model on a dataset of Python 2 and Python 3 code pairs, we can automate much of the migration process, significantly reducing the manual work required. 
 
-    // Call the FastAPI endpoint to convert Excel to CSV using Fetch API
-    const response = await fetch('http://localhost:8000/convert', {
-      method: 'POST',
-      body: formData,
-    });
-
-    // Check if the response is successful
-    if (!response.ok) {
-      throw new Error(Network response was not ok: ${response.statusText});
-    }
-
-    // Get the response data as a blob
-    const blob = await response.blob();
-
-    // Create a download link and trigger a download
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.download = 'result.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (error) {
-    console.error('Error converting Excel to CSV:', error);
-    // Handle errors or display a user-friendly message
-  }
-};
+The NMT model translates Python 2 code into Python 3 by learning patterns and differences between the two versions. It handles tasks such as updating syntax, adjusting integer division, and properly managing string and byte conversions. Once the code is migrated, post-processing steps, including manual review and automated testing, ensure accuracy and functionality. Combined with rule-based tools like `2to3`, this approach offers a hybrid solution that streamlines migration, accelerates the upgrade process, and reduces risks associated with outdated code. This not only ensures smoother transitions but also allows development teams to focus on innovation rather than maintenance.
