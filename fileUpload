@@ -1,25 +1,25 @@
 UI CHUNKS 
 
-const CHUNK_SIZE = 1024 * 1024;  // 1 MB
-
-export const uploadFileInChunks = async (file, networkUserId, userUid) => {
-  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+const uploadFileInChunks = async (file, networkUserId, useruid) => {
+  const chunkSize = 1 * 1024 * 1024; // 1MB per chunk
+  const totalChunks = Math.ceil(file.size / chunkSize);
 
   for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-    const start = chunkIndex * CHUNK_SIZE;
-    const end = Math.min(file.size, start + CHUNK_SIZE);
-    const fileChunk = file.slice(start, end);
+    const start = chunkIndex * chunkSize;
+    const end = Math.min(start + chunkSize, file.size);
+    const chunk = file.slice(start, end);
 
     const formData = new FormData();
-    formData.append("file", fileChunk);
+    formData.append("file", chunk);
     formData.append("chunkIndex", chunkIndex);
     formData.append("totalChunks", totalChunks);
     formData.append("networkUserId", networkUserId);
-    formData.append("userUid", userUid);
-    formData.append("fileName", file.name);  // Add a unique file identifier
+    formData.append("useruid", useruid);
+
+    const url = `${process.env.API_URL}/upload-chunk`;
 
     try {
-      const response = await fetch(`${APIURL}/FileUpload/processChunk`, {
+      const response = await fetch(url, {
         method: "POST",
         body: formData,
       });
@@ -28,62 +28,57 @@ export const uploadFileInChunks = async (file, networkUserId, userUid) => {
         throw new Error(`Failed to upload chunk ${chunkIndex}`);
       }
 
-      console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
+      console.log(`Uploaded chunk ${chunkIndex + 1} of ${totalChunks}`);
     } catch (error) {
-      console.error("Error uploading chunk", error);
-      throw error;
+      console.error(error);
+      break; // If one chunk fails, stop uploading
     }
   }
-
-  console.log("All chunks uploaded successfully");
 };
 
 
 Service CHUNKS- 
 
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, UploadFile, File, Form
+from starlette.responses import JSONResponse
 import os
 
 app = FastAPI()
-UPLOAD_DIR = "uploads"
 
-@app.post("/FileUpload/processChunk")
-async def process_chunk(
+# Directory where chunks will be stored temporarily
+TEMP_DIR = "temp_chunks"
+if not os.path.exists(TEMP_DIR):
+    os.makedirs(TEMP_DIR)
+
+@app.post("/upload-chunk")
+async def upload_chunk(
     file: UploadFile = File(...),
-    chunkIndex: int = Form(...),
-    totalChunks: int = Form(...),
-    fileName: str = Form(...),
+    chunk_index: int = Form(...),
+    total_chunks: int = Form(...),
     networkUserId: str = Form(...),
-    userUid: str = Form(...)
+    useruid: str = Form(...),
 ):
-    # Create a unique path for the file chunks
-    file_path = os.path.join(UPLOAD_DIR, f"{networkUserId}_{userUid}_{fileName}")
+    chunk_filename = f"{networkUserId}_{useruid}_{chunk_index}"
+    chunk_path = os.path.join(TEMP_DIR, chunk_filename)
 
-    # Ensure the directory exists
-    os.makedirs(file_path, exist_ok=True)
+    # Save the chunk to disk
+    with open(chunk_path, "wb") as f:
+        f.write(await file.read())
 
-    # Save the current chunk to disk
-    chunk_path = os.path.join(file_path, f"chunk_{chunkIndex}")
-    with open(chunk_path, "wb") as chunk_file:
-        content = await file.read()
-        chunk_file.write(content)
-
-    # Check if all chunks are uploaded
-    uploaded_chunks = len([f for f in os.listdir(file_path) if f.startswith("chunk_")])
-    if uploaded_chunks == totalChunks:
-        # Reassemble the chunks
-        final_path = os.path.join(UPLOAD_DIR, fileName)
+    # Check if all chunks have been uploaded
+    if chunk_index + 1 == total_chunks:
+        # Combine chunks into the final file
+        final_filename = f"{networkUserId}_{useruid}_final_file"
+        final_path = os.path.join("final_files", final_filename)
+        
         with open(final_path, "wb") as final_file:
-            for i in range(totalChunks):
-                chunk_path = os.path.join(file_path, f"chunk_{i}")
+            for i in range(total_chunks):
+                chunk_filename = f"{networkUserId}_{useruid}_{i}"
+                chunk_path = os.path.join(TEMP_DIR, chunk_filename)
                 with open(chunk_path, "rb") as chunk_file:
                     final_file.write(chunk_file.read())
-        
-        # Clean up the chunks directory after reassembling
-        for f in os.listdir(file_path):
-            os.remove(os.path.join(file_path, f))
-        os.rmdir(file_path)
+                os.remove(chunk_path)  # Remove the chunk after combining
 
-        return {"status": "File reassembled successfully"}
+        return JSONResponse(content={"message": "File uploaded and combined successfully."}, status_code=200)
 
-    return {"status": f"Chunk {chunkIndex + 1}/{totalChunks} received"}
+    return JSONResponse(content={"message": f"Chunk {chunk_index + 1} uploaded."}, status_code=200)
