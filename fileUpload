@@ -1,43 +1,89 @@
-fileUpload
+UI CHUNKS 
 
-import React, { useState } from 'react';
+const CHUNK_SIZE = 1024 * 1024;  // 1 MB
 
-const FileUploadComponent = () => {
-  const [file, setFile] = useState(null);
+export const uploadFileInChunks = async (file, networkUserId, userUid) => {
+  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-  };
+  for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+    const start = chunkIndex * CHUNK_SIZE;
+    const end = Math.min(file.size, start + CHUNK_SIZE);
+    const fileChunk = file.slice(start, end);
 
-  const handleUpload = () => {
-    if (file) {
-      const formData = new FormData();
-      const blob = new Blob([file], { type: file.type });
+    const formData = new FormData();
+    formData.append("file", fileChunk);
+    formData.append("chunkIndex", chunkIndex);
+    formData.append("totalChunks", totalChunks);
+    formData.append("networkUserId", networkUserId);
+    formData.append("userUid", userUid);
+    formData.append("fileName", file.name);  // Add a unique file identifier
 
-      formData.append('file', blob, file.name);
-
-      fetch('http://your-fastapi-service-url/upload-file/', {
-        method: 'POST',
+    try {
+      const response = await fetch(`${APIURL}/FileUpload/processChunk`, {
+        method: "POST",
         body: formData,
-      })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Upload successful:', data);
-        })
-        .catch(error => {
-          console.error('Error uploading file:', error);
-        });
-    } else {
-      console.warn('No file selected.');
-    }
-  };
+      });
 
-  return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
-    </div>
-  );
+      if (!response.ok) {
+        throw new Error(`Failed to upload chunk ${chunkIndex}`);
+      }
+
+      console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
+    } catch (error) {
+      console.error("Error uploading chunk", error);
+      throw error;
+    }
+  }
+
+  console.log("All chunks uploaded successfully");
 };
 
-export default FileUploadComponent;
+
+Service CHUNKS- 
+
+from fastapi import FastAPI, File, UploadFile, Form
+import os
+
+app = FastAPI()
+UPLOAD_DIR = "uploads"
+
+@app.post("/FileUpload/processChunk")
+async def process_chunk(
+    file: UploadFile = File(...),
+    chunkIndex: int = Form(...),
+    totalChunks: int = Form(...),
+    fileName: str = Form(...),
+    networkUserId: str = Form(...),
+    userUid: str = Form(...)
+):
+    # Create a unique path for the file chunks
+    file_path = os.path.join(UPLOAD_DIR, f"{networkUserId}_{userUid}_{fileName}")
+
+    # Ensure the directory exists
+    os.makedirs(file_path, exist_ok=True)
+
+    # Save the current chunk to disk
+    chunk_path = os.path.join(file_path, f"chunk_{chunkIndex}")
+    with open(chunk_path, "wb") as chunk_file:
+        content = await file.read()
+        chunk_file.write(content)
+
+    # Check if all chunks are uploaded
+    uploaded_chunks = len([f for f in os.listdir(file_path) if f.startswith("chunk_")])
+    if uploaded_chunks == totalChunks:
+        # Reassemble the chunks
+        final_path = os.path.join(UPLOAD_DIR, fileName)
+        with open(final_path, "wb") as final_file:
+            for i in range(totalChunks):
+                chunk_path = os.path.join(file_path, f"chunk_{i}")
+                with open(chunk_path, "rb") as chunk_file:
+                    final_file.write(chunk_file.read())
+        
+        # Clean up the chunks directory after reassembling
+        for f in os.listdir(file_path):
+            os.remove(os.path.join(file_path, f))
+        os.rmdir(file_path)
+
+        return {"status": "File reassembled successfully"}
+
+    return {"status": f"Chunk {chunkIndex + 1}/{totalChunks} received"}
