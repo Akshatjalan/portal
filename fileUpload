@@ -1,0 +1,261 @@
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import Navbar from "./components/Navbar";
+import PrivateRoute from "./components/PrivateRoute";
+import Home from "./pages/Home";
+import FileUpload from "./pages/FileUpload";
+import ControlTables from "./pages/ControlTables";
+import Workflow from "./pages/Workflow";
+import ProcessRerun from "./pages/ProcessRerun";
+import Dashboard from "./pages/Dashboard";
+import Reporting from "./pages/Reporting";
+import Resubmission from "./pages/Resubmission";
+import NoAuthorization from "./pages/NoAuthorization";
+import Missing from "./pages/Missing";
+import {
+  getEntitlements,
+  getColorCode,
+  getResubmissionFlag,
+  IAASLogs,
+  getCookies,
+  setSPNonce,
+} from "./services/api";
+import eventEmitter from "./utils/eventEmitter";
+import calculateComponentDetails from "./utils/calculateComponentDetails";
+
+const SNC_ROLES = [
+  "SNCDataProvider",
+  "SNCDataApprover",
+  "ResubmissionSNCDataProvider",
+  "ResubmissionSNCDataApprover",
+];
+
+const CORP_ROLES = [
+  "DataProvider",
+  "DataApprover",
+  "ResubmissionCorpDataProvider",
+  "ResubmissionCorpDataApprover",
+];
+
+const hasAnyRole = (roles, roleList) => roleList.some((role) => roles.includes(role));
+
+function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [envData, setEnvData] = useState([]);
+  const [isActive, setIsActive] = useState(true);
+  const [appId, setAppId] = useState(1);
+  const [logoutValue, setLogoutValue] = useState(false);
+  const [roleDataDropdown, setRoleDataDropdown] = useState(false);
+  const [resetResubmissionFlag, setResetResubmissionFlag] = useState([]);
+
+  useEffect(() => {
+    window.nonce = setSPNonce();
+  }, []);
+
+  useEffect(() => {
+    const getEntitlement = async () => {
+      const entitlements = await getEntitlements();
+      if (entitlements && entitlements.GetEntitlementsOutMsg) {
+        const rolesGroup =
+          entitlements.GetEntitlementsOutMsg.CHLUser?.SystemInfo?.Obj?.[0]?.Obj?.[3]?.Obj?.find(
+            (x) => x.name === "DefaultAccessGroup"
+          );
+
+        if (rolesGroup) {
+          setCurrentUser({
+            name: `${entitlements.GetEntitlementsOutMsg.CHLUser?.lastName}, ${entitlements.GetEntitlementsOutMsg.CHLUser?.firstName}`,
+            roles: rolesGroup.valuesets.split(","),
+            componentDetails: calculateComponentDetails(rolesGroup.valuesets.split(",")),
+            uid: entitlements.GetEntitlementsOutMsg.CHLUser?.networkUserId,
+            emailAddr: entitlements.GetEntitlementsOutMsg.CHLUser?.emailAddr,
+          });
+        } else {
+          setCurrentUser({
+            name: "",
+            roles: [],
+            componentDetails: [],
+            uid: "",
+            emailAddr: "",
+          });
+        }
+      } else {
+        setCurrentUser({
+          name: "",
+          roles: [],
+          componentDetails: [],
+          uid: "",
+          emailAddr: "",
+        });
+      }
+    };
+
+    if (window.location.origin.indexOf("localhost") === -1) {
+      getEntitlement();
+    } else {
+      setCurrentUser({
+        name: "name",
+        roles: [
+          "Portalsuperuser",
+          "Administrator",
+          "Readonly",
+          "DataApprover",
+          "DataProvider",
+          "SNCDataProvider",
+          "SNCDataApprover",
+          "ResubmissionSNCDataProvider",
+          "ResubmissionSNCDataApprover",
+          "ResubmissionCorpDataProvider",
+          "ResubmissionCorpDataApprover",
+        ],
+        componentDetails: calculateComponentDetails([
+          "Portalsuperuser",
+          "Administrator",
+          "Readonly",
+          "DataApprover",
+          "DataProvider",
+        ]),
+        uid: "zkrou7w",
+        emailAddr: "email",
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      const getEnv = async () => {
+        try {
+          const envResponse = await getColorCode(appId, currentUser.uid);
+          setEnvData(envResponse);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      getEnv();
+    }
+  }, [appId, currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      const fetchApi = async () => {
+        try {
+          const data = await getResubmissionFlag(appId, currentUser.uid);
+          setResetResubmissionFlag(data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      fetchApi();
+      eventEmitter.on("resubmit", fetchApi);
+      return () => {
+        eventEmitter.off("resubmit", fetchApi);
+      };
+    }
+  }, [appId, currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.roles && hasAnyRole(currentUser.roles, SNC_ROLES) && 
+        !hasAnyRole(currentUser.roles, CORP_ROLES)) {
+      setAppId("2");
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.roles && hasAnyRole(currentUser.roles, [...SNC_ROLES, ...CORP_ROLES])) {
+      setRoleDataDropdown(true);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    let timeout;
+    const resetTimer = () => {
+      if (isActive) {
+        clearTimeout(timeout);
+        timeout = setTimeout(logout, 30 * 60 * 1000); // 30 minutes
+      }
+    };
+
+    const logout = async () => {
+      try {
+        await getCookies();
+        setLogoutValue(true);
+        setTimeout(() => {
+          window.location.href = "https://fedsso-dev.bankofamerica.com/idp/startSLO.ping";
+        }, 5000);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const events = ["load", "mousemove", "mousedown", "click", "scroll", "keypress"];
+    events.forEach((event) => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeout);
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, [isActive]);
+
+  const handleRoleChange = (role) => {
+    setAppId(role);
+  };
+
+  const renderUnauthorizedMessage = (message) => (
+    <div className="unauthorized-component">
+      {message}
+    </div>
+  );
+
+  const renderAppContent = () => {
+    if (!currentUser?.roles) return null;
+
+    if (resetResubmissionFlag[0] === "y") {
+      if (!hasAnyRole(currentUser.roles, [...SNC_ROLES, ...CORP_ROLES])) {
+        return renderUnauthorizedMessage(
+          "Please raise an ARM request to GBREG Portal as you do not have the correct permissions."
+        );
+      }
+    } else if (!hasAnyRole(currentUser.roles, SNC_ROLES)) {
+      return renderUnauthorizedMessage(
+        "Resubmission is in progress and you do not have the roles to perform the exercise. Please raise Resubmission Access."
+      );
+    }
+
+    return (
+      <Router>
+        <Navbar
+          envData={envData}
+          currentUser={currentUser}
+          getIAASLogs={getIAASLogs}
+          onRoleChange={handleRoleChange}
+          roleDataDropdown={roleDataDropdown}
+          appId={appId}
+          resetResubmissionFlag={resetResubmissionFlag}
+        />
+        <Routes>
+          <Route path="/" element={PrivateRoute(Home, currentUser, appId, "Home")} />
+          <Route path="/upload" element={PrivateRoute(FileUpload, currentUser, appId, "FileUpload")} />
+          <Route path="/control" element={PrivateRoute(ControlTables, currentUser, appId, "ControlTables")} />
+          <Route path="/workflow" element={PrivateRoute(Workflow, currentUser, appId, "Workflow")} />
+          <Route path="/process" element={PrivateRoute(ProcessRerun, currentUser, appId, "ProcessRerun")} />
+          <Route path="/dashboard" element={PrivateRoute(Dashboard, currentUser, appId, "Dashboard")} />
+          <Route path="/reporting" element={PrivateRoute(Reporting, currentUser, appId, "Reporting")} />
+          <Route path="/resubmission" element={PrivateRoute(Resubmission, currentUser, appId, "Resubmission")} />
+          <Route path="/NoAuthorization" element={<NoAuthorization />} />
+          <Route path="*" element={<Missing />} />
+        </Routes>
+      </Router>
+    );
+  };
+
+  return (
+    <div>
+      <ToastContainer position="top-center" limit={1} />
+      {renderAppContent()}
+    </div>
+  );
+}
+
+export default App;
