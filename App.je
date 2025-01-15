@@ -1,0 +1,227 @@
+function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [envData, setEnvData] = useState([]);
+  const [isActive, setIsActive] = useState(true);
+  const [appId, setAppId] = useState(1);
+  const [logoutValue, setLogoutValue] = useState(false);
+  const [roleDataDropdown, setRoleDataDropdown] = useState(false);
+  const [resetResubmissionFlag, setResetResubmissionFlag] = useState([]);
+
+  useEffect(() => {
+    window.nonce = setSPNonce();
+  }, []);
+
+  useEffect(() => {
+    const initializeUser = async () => {
+      const isLocalhost = window.location.origin.indexOf("localhost") > -1;
+
+      if (isLocalhost) {
+        setCurrentUser({
+          name: "name",
+          roles: [
+            "Portalsuperuser",
+            "Administrator",
+            "Readonly",
+            "DataApprover",
+            "DataProvider",
+            "SNCDataProvider",
+            "SNCDataApprover",
+            "ResubmissionSNCDataProvider",
+            "ResubmissionSNCDataApprover",
+            "ResubmissionCorpDataProvider",
+            "ResubmissionCorpDataApprover",
+          ],
+          componentDetails: calculateComponentDetails([
+            "PortalsuperUser",
+            "Administrator",
+            "Readonly",
+            "DataApprover",
+            "DataProvider",
+          ]),
+          uid: "zkrou7w",
+          emailAddr: "email",
+        });
+      } else {
+        const entitlements = await getEntitlements();
+        if (entitlements?.GetEntitlementsOutMsg) {
+          const rolesGroup = entitlements.GetEntitlementsOutMsg.CHLUser?.SystemInfo?.Obj?.[0]?.Obj?.[3]?.Obj.find(
+            (x) => x.name === "DefaultAccessGroup"
+          );
+          setCurrentUser({
+            name: `${entitlements.GetEntitlementsOutMsg.CHLUser?.lastName}, ${entitlements.GetEntitlementsOutMsg.CHLUser?.firstName}`,
+            roles: rolesGroup ? rolesGroup.valuesets.split(",") : [],
+            componentDetails: calculateComponentDetails(
+              rolesGroup ? rolesGroup.valuesets.split(",") : []
+            ),
+            uid: entitlements.GetEntitlementsOutMsg.CHLUser?.networkUserId,
+            emailAddr: entitlements.GetEntitlementsOutMsg.CHLUser?.emailAddr,
+          });
+        }
+      }
+    };
+
+    initializeUser();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      const fetchEnvData = async () => {
+        try {
+          const envResponse = await getColorCode(appId, currentUser.uid);
+          setEnvData(envResponse);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      fetchEnvData();
+    }
+  }, [currentUser, appId]);
+
+  useEffect(() => {
+    if (currentUser) {
+      const fetchResubmissionFlag = async () => {
+        try {
+          const data = await getResubmissionFlag(appId, currentUser.uid);
+          setResetResubmissionFlag(data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      fetchResubmissionFlag();
+      eventEmitter.on("resubmit", fetchResubmissionFlag);
+      return () => eventEmitter.off("resubmit", fetchResubmissionFlag);
+    }
+  }, [currentUser, appId]);
+
+  const isSNCOnlyUser = () =>
+    currentUser?.roles.some((role) =>
+      [
+        "SNCDataProvider",
+        "SNCDataApprover",
+        "ResubmissionSNCDataProvider",
+        "ResubmissionSNCDataApprover",
+      ].includes(role)
+    ) &&
+    !currentUser?.roles.some((role) =>
+      [
+        "DataProvider",
+        "DataApprover",
+        "ResubmissionCorpDataProvider",
+        "ResubmissionCorpDataApprover",
+      ].includes(role)
+    );
+
+  const hasResubmissionRoles = () =>
+    currentUser?.roles.some((role) =>
+      [
+        "ResubmissionSNCDataProvider",
+        "ResubmissionSNCDataApprover",
+        "ResubmissionCorpDataProvider",
+        "ResubmissionCorpDataApprover",
+      ].includes(role)
+    );
+
+  const initializeAppId = () => {
+    if (isSNCOnlyUser()) {
+      setAppId("2");
+    }
+  };
+
+  const toggleRoleDropdown = () => {
+    if (
+      currentUser?.roles.some((role) =>
+        [
+          "SNCDataProvider",
+          "SNCDataApprover",
+          "ResubmissionSNCDataProvider",
+          "ResubmissionSNCDataApprover",
+        ].includes(role)
+      ) &&
+      currentUser?.roles.some((role) =>
+        [
+          "DataProvider",
+          "DataApprover",
+          "ResubmissionCorpDataProvider",
+          "ResubmissionCorpDataApprover",
+        ].includes(role)
+      )
+    ) {
+      setRoleDataDropdown(true);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      initializeAppId();
+      toggleRoleDropdown();
+    }
+  }, [currentUser]);
+
+  const renderContent = () => {
+    if (resetResubmissionFlag[0] !== "y") {
+      return (
+        <div>
+          {currentUser?.roles && !hasResubmissionRoles() ? (
+            <div className="unauthorized-component">
+              Resubmission is in progress and you do not have the roles to perform
+              the exercise. Please raise Resubmission Access.
+            </div>
+          ) : (
+            renderRouter()
+          )}
+        </div>
+      );
+    }
+
+    return hasResubmissionRoles() ? renderRouter() : renderUnauthorizedRouter();
+  };
+
+  const renderRouter = () => (
+    <Router>
+      <Navbar
+        envData={envData}
+        currentUser={currentUser}
+        getIAASLogs={getIAASLogs}
+        onRoleChange={handleRoleChange}
+        roleDataDropdown={roleDataDropdown}
+        appId={appId}
+        resetResubmissionFlag={resetResubmissionFlag}
+      />
+      <Routes>
+        <Route
+          path="/upload"
+          element={PrivateRoute(FileUpload, currentUser, appId, "FileUpload")}
+        />
+        <Route
+          path="/control"
+          element={PrivateRoute(ControlTables, currentUser, appId, "ControlTables")}
+        />
+        {/* Add other routes */}
+        <Route path="*" element={<Missing />} />
+      </Routes>
+    </Router>
+  );
+
+  const renderUnauthorizedRouter = () => (
+    <Router>
+      <Routes>
+        <Route
+          exact
+          path="*"
+          element={PrivateRoute(
+            NoAuthorizationResubmission,
+            currentUser,
+            appId,
+            "NoAuthorizationResubmission"
+          )}
+        />
+      </Routes>
+    </Router>
+  );
+
+  return <div>{renderContent()}</div>;
+}
+
+export default App;
