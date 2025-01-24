@@ -1,0 +1,207 @@
+Here’s some CSS to make the application visually appealing and organized. You can create a CSS file (e.g., App.css) and import it into your React app.
+
+App.css
+
+/* General styles for the app */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+header {
+  display: flex;
+  justify-content: flex-end;
+  background-color: #333;
+  padding: 10px 20px;
+}
+
+header button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+header button:hover {
+  background-color: #0056b3;
+}
+
+/* Tab container styles */
+.tab-container {
+  display: flex;
+  justify-content: flex-start;
+  padding: 10px 20px;
+  background-color: white;
+  border-bottom: 2px solid #ddd;
+}
+
+.tab-container button {
+  padding: 10px 20px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #ddd;
+  color: black;
+  transition: all 0.3s ease;
+}
+
+.tab-container button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.tab-container button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+/* Tab content styles */
+.tab-content {
+  padding: 20px;
+  margin: 20px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Admin panel styles */
+.admin-panel {
+  padding: 20px;
+}
+
+.admin-panel h2,
+.admin-panel h3 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.admin-panel input {
+  display: block;
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 300px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.admin-panel button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.admin-panel button:hover {
+  background-color: #0056b3;
+}
+
+.admin-panel .tab-list div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.admin-panel .tab-list span {
+  flex-grow: 1;
+}
+
+.admin-panel .tab-list button {
+  background-color: #ff4d4d;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.admin-panel .tab-list button:hover {
+  background-color: #e60000;
+}
+
+Updated Component Classes
+	1.	Tabs.js
+Update the div for tabs with a className="tab-container".
+
+<div className="tab-container">
+  {tabs.map((tab) => (
+    <button
+      key={tab.id}
+      onClick={() => setActiveTab(tab.id)}
+      className={activeTab === tab.id ? "active" : ""}
+    >
+      {tab.name}
+    </button>
+  ))}
+</div>
+
+
+	2.	TabContent.js
+Add className="tab-content" to the outer div.
+
+<div className="tab-content">
+  {content || "Select a tab to view its content."}
+</div>
+
+
+	3.	AdminPanel.js
+Wrap the admin panel content with className="admin-panel".
+
+<div className="admin-panel">
+  <h2>Admin Panel</h2>
+  <div className="tab-list">
+    <h3>Existing Tabs</h3>
+    {tabs.map((tab) => (
+      <div key={tab.id}>
+        <span>{tab.name}</span>
+        <button onClick={() => deleteTab(tab.id)}>Delete</button>
+      </div>
+    ))}
+  </div>
+  <div>
+    <h3>Add New Tab</h3>
+    <input
+      type="text"
+      placeholder="Tab Name"
+      value={newTab.name}
+      onChange={(e) => setNewTab({ ...newTab, name: e.target.value })}
+    />
+    <input
+      type="text"
+      placeholder="Tab Content"
+      value={newTab.content}
+      onChange={(e) => setNewTab({ ...newTab, content: e.target.value })}
+    />
+    <button onClick={addTab}>Add Tab</button>
+  </div>
+</div>
+
+Results
+	1.	Tabs:
+	•	Buttons have rounded edges, with hover and active state color changes.
+	•	Content is styled with a card-like look.
+	2.	Admin Panel:
+	•	Inputs and buttons are neatly aligned.
+	•	Existing tabs are listed with delete buttons styled in red for clarity.
+
+Import CSS in App.js
+
+Finally, import the CSS in your App.js:
+
+import "./App.css";
+
+This will apply the styles globally to your app.
