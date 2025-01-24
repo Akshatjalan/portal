@@ -1,0 +1,220 @@
+To implement the described application, we will use React for the frontend. Below is a step-by-step approach to achieve this:
+
+Features
+	1.	UI Layout:
+	•	Eight tabs displayed in a horizontal row.
+	•	Clicking on a tab opens its respective content.
+	•	A default admin panel button at the top, which navigates to the admin configuration page.
+	2.	Admin Panel:
+	•	Allows modifications to tabs and controls.
+	•	Enables the addition or deletion of tabs.
+	•	Uses JSON-based configuration for flexibility.
+	3.	Dynamic Configuration:
+	•	All tab content and controls are driven by a JSON configuration file, making the app scalable and customizable.
+
+Project Setup
+	1.	Create a new React app:
+
+npx create-react-app tab-management-app
+cd tab-management-app
+npm start
+
+
+	2.	Install required libraries:
+
+npm install react-router-dom
+
+Folder Structure
+
+src/
+  components/
+    Tabs.js
+    TabContent.js
+    AdminPanel.js
+  data/
+    config.json
+  App.js
+  index.js
+
+JSON Configuration (src/data/config.json)
+
+{
+  "tabs": [
+    { "id": 1, "name": "Tab 1", "content": "This is Tab 1 content." },
+    { "id": 2, "name": "Tab 2", "content": "This is Tab 2 content." },
+    { "id": 3, "name": "Tab 3", "content": "This is Tab 3 content." },
+    { "id": 4, "name": "Tab 4", "content": "This is Tab 4 content." },
+    { "id": 5, "name": "Tab 5", "content": "This is Tab 5 content." },
+    { "id": 6, "name": "Tab 6", "content": "This is Tab 6 content." },
+    { "id": 7, "name": "Tab 7", "content": "This is Tab 7 content." },
+    { "id": 8, "name": "Tab 8", "content": "This is Tab 8 content." }
+  ]
+}
+
+Main Code Implementation
+
+App.js
+
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Tabs from "./components/Tabs";
+import AdminPanel from "./components/AdminPanel";
+
+function App() {
+  return (
+    <Router>
+      <div>
+        <header>
+          <button
+            onClick={() => (window.location.href = "/admin")}
+            style={{ margin: "10px", padding: "10px" }}
+          >
+            Admin Panel
+          </button>
+        </header>
+        <Routes>
+          <Route path="/" element={<Tabs />} />
+          <Route path="/admin" element={<AdminPanel />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+Tabs.js
+
+import React, { useState, useEffect } from "react";
+import TabContent from "./TabContent";
+import configData from "../data/config.json";
+
+const Tabs = () => {
+  const [tabs, setTabs] = useState([]);
+  const [activeTab, setActiveTab] = useState(1);
+
+  useEffect(() => {
+    setTabs(configData.tabs);
+  }, []);
+
+  return (
+    <div>
+      <div style={{ display: "flex", marginBottom: "20px" }}>
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: "10px",
+              marginRight: "5px",
+              backgroundColor: activeTab === tab.id ? "blue" : "gray",
+              color: "white",
+            }}
+          >
+            {tab.name}
+          </button>
+        ))}
+      </div>
+      <TabContent content={tabs.find((tab) => tab.id === activeTab)?.content} />
+    </div>
+  );
+};
+
+export default Tabs;
+
+TabContent.js
+
+import React from "react";
+
+const TabContent = ({ content }) => {
+  return (
+    <div style={{ border: "1px solid black", padding: "20px" }}>
+      {content || "Select a tab to view its content."}
+    </div>
+  );
+};
+
+export default TabContent;
+
+AdminPanel.js
+
+import React, { useState } from "react";
+import configData from "../data/config.json";
+
+const AdminPanel = () => {
+  const [tabs, setTabs] = useState(configData.tabs);
+  const [newTab, setNewTab] = useState({ name: "", content: "" });
+
+  const addTab = () => {
+    const updatedTabs = [
+      ...tabs,
+      { id: tabs.length + 1, name: newTab.name, content: newTab.content },
+    ];
+    setTabs(updatedTabs);
+    setNewTab({ name: "", content: "" });
+  };
+
+  const deleteTab = (id) => {
+    const updatedTabs = tabs.filter((tab) => tab.id !== id);
+    setTabs(updatedTabs);
+  };
+
+  return (
+    <div>
+      <h2>Admin Panel</h2>
+      <div>
+        <h3>Existing Tabs</h3>
+        {tabs.map((tab) => (
+          <div key={tab.id} style={{ marginBottom: "10px" }}>
+            <span>{tab.name}</span>
+            <button
+              onClick={() => deleteTab(tab.id)}
+              style={{ marginLeft: "10px", color: "red" }}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+      </div>
+      <div>
+        <h3>Add New Tab</h3>
+        <input
+          type="text"
+          placeholder="Tab Name"
+          value={newTab.name}
+          onChange={(e) => setNewTab({ ...newTab, name: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="Tab Content"
+          value={newTab.content}
+          onChange={(e) => setNewTab({ ...newTab, content: e.target.value })}
+        />
+        <button onClick={addTab}>Add Tab</button>
+      </div>
+    </div>
+  );
+};
+
+export default AdminPanel;
+
+Explanation
+	1.	Dynamic Tabs:
+	•	Tabs and their content are rendered based on config.json.
+	•	Clicking a tab updates the active tab state, displaying its respective content.
+	2.	Admin Panel:
+	•	Allows adding new tabs or deleting existing ones.
+	•	Tabs are managed in a local state for simplicity (can be extended to persist changes in config.json).
+	3.	Routing:
+	•	Used react-router-dom for navigation between the main UI and the Admin Panel.
+
+Running the Application
+	1.	Start the app:
+
+npm start
+
+
+	2.	Access the tabs view at http://localhost:3000.
+	3.	Access the admin panel at http://localhost:3000/admin.
+
+This setup provides a flexible and scalable React-based application to meet your requirements!
