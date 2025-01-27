@@ -217,4 +217,132 @@ npm start
 	2.	Access the tabs view at http://localhost:3000.
 	3.	Access the admin panel at http://localhost:3000/admin.
 
+
+
+
+
+To include content like the one shown in the image you shared, we can enhance the TabContent component to display data in a structured table format. Additionally, we’ll adjust the config.json to include more complex data representing the table rows and columns.
+
+Updated JSON Configuration (src/data/config.json)
+
+Here is an example that matches the table structure you shared:
+
+{
+  "tabs": [
+    {
+      "id": 1,
+      "name": "Tab 1",
+      "content": [
+        {
+          "dataElements": "Facility ID",
+          "prevQuarter": "000000111000000010000215",
+          "currentQuarter": "000000111000000010000215",
+          "message": "Reasonableness Tests successful"
+        },
+        {
+          "dataElements": "Obligor Name",
+          "prevQuarter": "TURNER HILL PARTNERS LLC",
+          "currentQuarter": "TURNER HILL PA",
+          "message": "Reasonableness Tests successful"
+        },
+        {
+          "dataElements": "10 Dot Hierarchy",
+          "prevQuarter": "JMEFA",
+          "currentQuarter": "JMEFA",
+          "message": "Reasonableness Tests successful"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Tab 2",
+      "content": [
+        {
+          "dataElements": "Source System",
+          "prevQuarter": "LIQ",
+          "currentQuarter": "LIQ",
+          "message": "Reasonableness Tests successful"
+        },
+        {
+          "dataElements": "Report Status",
+          "prevQuarter": "Existing",
+          "currentQuarter": "Existing",
+          "message": "Reasonableness Tests successful"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Tab 3",
+      "content": [
+        {
+          "dataElements": "Global Customer Identifier (GCI)",
+          "prevQuarter": "325200012",
+          "currentQuarter": "325200012",
+          "message": "Reasonableness Tests successful"
+        }
+      ]
+    }
+  ]
+}
+
+Updated TabContent.js
+
+Here, we’ll dynamically render the table based on the content provided in the JSON.
+
+import React from "react";
+
+const TabContent = ({ content }) => {
+  if (!content || content.length === 0) {
+    return <div>Select a tab to view its content.</div>;
+  }
+
+  return (
+    <div style={{ border: "1px solid black", padding: "20px" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ border: "1px solid black", padding: "8px" }}>Data Elements</th>
+            <th style={{ border: "1px solid black", padding: "8px" }}>Prev Quarter</th>
+            <th style={{ border: "1px solid black", padding: "8px" }}>Current Quarter</th>
+            <th style={{ border: "1px solid black", padding: "8px" }}>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {content.map((row, index) => (
+            <tr key={index}>
+              <td style={{ border: "1px solid black", padding: "8px" }}>{row.dataElements}</td>
+              <td style={{ border: "1px solid black", padding: "8px" }}>{row.prevQuarter}</td>
+              <td style={{ border: "1px solid black", padding: "8px" }}>{row.currentQuarter}</td>
+              <td style={{ border: "1px solid black", padding: "8px" }}>{row.message}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default TabContent;
+
+Explanation of Changes
+	1.	Dynamic Table Rendering:
+	•	The content of each tab is now an array of objects.
+	•	Each object represents a row in the table with keys for dataElements, prevQuarter, currentQuarter, and message.
+	2.	Table Layout:
+	•	The TabContent component dynamically generates a table, rendering the header and rows based on the data.
+	3.	CSS Styling:
+	•	Added basic inline CSS for table borders and padding to match the format shown in the image.
+
+Output for Each Tab
+	•	Tab 1: Displays 3 rows of data with details for “Facility ID,” “Obligor Name,” and “10 Dot Hierarchy.”
+	•	Tab 2: Displays 2 rows of data with details for “Source System” and “Report Status.”
+	•	Tab 3: Displays a single row with details for “Global Customer Identifier (GCI).”
+
+Updated Workflow
+	1.	Open the app in your browser.
+	2.	Click on a tab to display its respective table content.
+	3.	Navigate to the Admin Panel to update the configuration as needed.
+
+With this setup, the content for each tab is dynamic, matching the table-like structure shown in your attachment.
 This setup provides a flexible and scalable React-based application to meet your requirements!
