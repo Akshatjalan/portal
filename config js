@@ -1,0 +1,113 @@
+const config = {
+  tabs: [
+    {
+      id: "indicative",
+      name: "Indicative",
+      content: [
+        {
+          key: "facilityID",
+          label: "Facility ID",
+          prevQuarter: "000000111000000010000215",
+          currentQuarter: "000000111000000010000215",
+          currentQuarterSource: "2024_Q4 - Core DE - 2024_Q4 - ST2 Value From CRP",
+          reasonablenessAnalysis: "Reasonableness Tests successful",
+          explanation: {
+            type: "dropdown",
+            options: ["Explanation Type 1", "Explanation Type 2"],
+            default: "Explanation Type 1",
+          },
+        },
+        {
+          key: "obligorName",
+          label: "Obligor Name",
+          prevQuarter: "TURNER HILL PARTNERS LLC",
+          currentQuarter: "TURNER HILL PAI",
+          currentQuarterSource: "2024_Q4 - Core DE - 2024_Q4 - ST2 Value From CRP",
+          reasonablenessAnalysis: "Reasonableness Tests successful",
+          explanation: {
+            type: "dropdown",
+            options: ["Explanation Type 1", "Explanation Type 2"],
+            default: "Explanation Type 1",
+          },
+        },
+        {
+          key: "dotHierarchy",
+          label: "10 Dot Hierarchy",
+          prevQuarter: "JMEFA",
+          currentQuarter: "JMEFA",
+          currentQuarterSource: "",
+          reasonablenessAnalysis: "Reasonableness Tests successful",
+          explanation: {
+            type: "dropdown",
+            options: ["Explanation Type 1", "Explanation Type 2"],
+            default: "Explanation Type 1",
+          },
+        },
+        {
+          key: "hierarchyDescription",
+          label: "10 Dot Hierarchy Description",
+          prevQuarter: "CREB EAST - SOUTHEAST",
+          currentQuarter: "CREB EAST - SOI",
+          currentQuarterSource: "",
+          reasonablenessAnalysis: "Reasonableness Tests successful",
+          explanation: {
+            type: "dropdown",
+            options: ["Explanation Type 1", "Explanation Type 2"],
+            default: "Explanation Type 1",
+          },
+        },
+        {
+          key: "actionButton",
+          label: "Action",
+          prevQuarter: "",
+          currentQuarter: {
+            type: "button",
+            buttonLabel: "Validate",
+            onClickId: "validateData",
+          },
+          currentQuarterSource: "",
+          reasonablenessAnalysis: "Pending Validation",
+          explanation: {
+            type: "dropdown",
+            options: ["Explanation Type 1", "Explanation Type 2"],
+            default: "Explanation Type 1",
+          },
+        },
+      ],
+    },
+    {
+      id: "financial",
+      name: "Financial",
+      content: [
+        {
+          key: "sourceSystem",
+          label: "Source System",
+          prevQuarter: "LIQ",
+          currentQuarter: "LIQ",
+          currentQuarterSource: "",
+          reasonablenessAnalysis: "Reasonableness Tests successful",
+          explanation: {
+            type: "dropdown",
+            options: ["Explanation Type 1", "Explanation Type 2"],
+            default: "Explanation Type 1",
+          },
+        },
+        {
+          key: "reportStatus",
+          label: "Report Status",
+          prevQuarter: "Existing",
+          currentQuarter: "Existing",
+          currentQuarterSource: "",
+          reasonablenessAnalysis: "Reasonableness Tests successful",
+          explanation: {
+            type: "dropdown",
+            options: ["Explanation Type 1", "Explanation Type 2"],
+            default: "Explanation Type 1",
+          },
+        },
+      ],
+    },
+  ],
+};
+
+export default config;
