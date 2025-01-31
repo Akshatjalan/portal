@@ -1,0 +1,79 @@
+import React, { useState } from "react";
+
+const Modal = ({ onClose }) => {
+  const [step, setStep] = useState(0);
+
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalContent}>
+        <button onClick={onClose} style={styles.closeButton}>X</button>
+
+        {step === 0 && (
+          <>
+            <h2>Select an Option</h2>
+            <button onClick={() => setStep(1)}>Go to Page 1</button>
+            <button onClick={() => setStep(2)}>Go to Page 2</button>
+            <button onClick={() => setStep(3)}>Go to Page 3</button>
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <h2>Page 1</h2>
+            <p>This is the first page inside the modal.</p>
+            <input type="text" placeholder="Enter something..." />
+            <button onClick={() => setStep(0)}>Back</button>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <h2>Page 2</h2>
+            <p>Another page with input fields.</p>
+            <input type="number" placeholder="Enter a number" />
+            <button onClick={() => setStep(0)}>Back</button>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <h2>Page 3</h2>
+            <p>Last page with a dropdown.</p>
+            <select>
+              <option>Option 1</option>
+              <option>Option 2</option>
+            </select>
+            <button onClick={() => setStep(0)}>Back</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const styles = {
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    background: "white",
+    padding: "20px",
+    borderRadius: "8px",
+    textAlign: "center",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+};
+
+export default Modal;
