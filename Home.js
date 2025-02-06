@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { AgGridReact } from "ag-grid-react";
 import { useNavigate } from "react-router-dom";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./ExceptionTable.css";
 
 const ExceptionTable = () => {
   const navigate = useNavigate();
 
+  // Sample row data (based on your image)
   const [rowData] = useState([
     {
       facilityId: "000001110000000010000215",
@@ -33,39 +31,25 @@ const ExceptionTable = () => {
       openItems: 8,
       completeStatus: "NOT COMPLETE",
     },
-  ]);
-
-  const columnDefs = [
     {
-      headerName: "Facility ID",
-      field: "facilityId",
-      sortable: true,
-      filter: true,
-      cellRenderer: (params) => {
-        return (
-          <span
-            className="clickable-link"
-            onClick={() => navigate(`/facilityDetails/${params.value}`)}
-          >
-            {params.value}
-          </span>
-        );
-      },
+      facilityId: "00000128000000001000056",
+      gci: "327792404",
+      obligorName: "VAIL MANOR DEVELOPERS L.L.C.",
+      sor: "LIQ",
+      dot2: "JM",
+      dot5: "JMEJA",
+      businessDescription: "CREB EAST - NY/NJ",
+      status: "Existing",
+      openItems: 6,
+      completeStatus: "NOT COMPLETE",
     },
-    { headerName: "GCI", field: "gci", sortable: true, filter: true },
-    { headerName: "Obligor Name", field: "obligorName", sortable: true, filter: true },
-    { headerName: "SOR", field: "sor", sortable: true },
-    { headerName: "2 Dot", field: "dot2", sortable: true },
-    { headerName: "5 Dot", field: "dot5", sortable: true },
-    { headerName: "Line of Business Description", field: "businessDescription", sortable: true, filter: true },
-    { headerName: "Status", field: "status", sortable: true },
-    { headerName: "Open Items", field: "openItems", sortable: true },
-    { headerName: "Complete Status", field: "completeStatus", sortable: true },
-  ];
+  ]);
 
   return (
     <div className="exception-table-container">
       <h2>Exception Search</h2>
+      
+      {/* Search Bar */}
       <div className="search-container">
         <select className="search-input">
           <option>Exception Queue</option>
@@ -76,8 +60,47 @@ const ExceptionTable = () => {
         <input type="text" placeholder="Line of Business Description" className="search-input" />
       </div>
 
-      <div className="ag-theme-alpine ag-grid-container">
-        <AgGridReact rowData={rowData} columnDefs={columnDefs} pagination={true} paginationPageSize={10} />
+      {/* Table */}
+      <div className="table-container">
+        <table className="styled-table">
+          <thead>
+            <tr>
+              <th>Facility ID</th>
+              <th>GCI</th>
+              <th>Obligor Name</th>
+              <th>SOR</th>
+              <th>2 Dot</th>
+              <th>5 Dot</th>
+              <th>Line of Business Description</th>
+              <th>Status</th>
+              <th>Open Items</th>
+              <th>Complete Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rowData.map((row, index) => (
+              <tr key={index}>
+                <td>
+                  <span 
+                    className="clickable-link"
+                    onClick={() => navigate(`/facilityDetails/${row.facilityId}`)}
+                  >
+                    {row.facilityId}
+                  </span>
+                </td>
+                <td>{row.gci}</td>
+                <td>{row.obligorName}</td>
+                <td>{row.sor}</td>
+                <td>{row.dot2}</td>
+                <td>{row.dot5}</td>
+                <td>{row.businessDescription}</td>
+                <td>{row.status}</td>
+                <td>{row.openItems}</td>
+                <td>{row.completeStatus}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
