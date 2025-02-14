@@ -71,47 +71,53 @@ export default function FacilityDetails() {
 
 
 
-      <style jsx>{`
-        .container {
-          padding: 20px;
-        }
-        .facility-card {
-          background: white;
-          padding: 20px;
-          border-radius: 10px;
-          box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease-in-out;
-        }
-        .collapsed {
-          padding: 10px;
-          box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .main-details {
-          font-size: 1.2em;
-          font-weight: bold;
-        }
-        .full-details {
-          margin-top: 15px;
-          font-size: 1em;
-        }
-        .legend {
-          margin-top: 10px;
-          display: flex;
-          align-items: center;
-        }
-        .legend span {
-          display: inline-block;
-          width: 20px;
-          height: 10px;
-          margin-right: 5px;
-        }
-        .yellow {
-          background: yellow;
-        }
-        .orange {
-          background: orange;
-        }
-      `}</style>
-    </div>
-  );
+.container {
+  padding: 20px;
+}
+
+.facility-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+.collapsed {
+  padding: 10px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+td strong {
+  font-weight: bold;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+}
+
+.yellow, .orange {
+  display: inline-block;
+  width: 20px;
+  height: 10px;
+  margin-right: 5px;
+}
+
+.yellow {
+  background: yellow;
+}
+
+.orange {
+  background: orange;
 }
