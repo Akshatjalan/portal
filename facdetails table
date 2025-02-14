@@ -20,104 +20,48 @@ export default function FacilityDetails() {
   return (
     <div className="container">
       <div className={`facility-card ${isCollapsed ? "collapsed" : ""}`}>
-        <table>
-          <tbody>
-            <tr>
-              <td><strong>Facility ID:</strong></td>
-              <td>00000011100000001000215</td>
-            </tr>
-            <tr>
-              <td><strong>Obligor Name:</strong></td>
-              <td>TURNER HILL PARTNERS LLC</td>
-            </tr>
-            <tr>
-              <td><strong>Status:</strong></td>
-              <td>Existing</td>
-            </tr>
-            {!isCollapsed && (
-              <>
-                <tr>
-                  <td><strong>GCI:</strong></td>
-                  <td>325200012</td>
-                </tr>
-                <tr>
-                  <td><strong>SOR:</strong></td>
-                  <td>LIQ</td>
-                </tr>
-                <tr>
-                  <td><strong>Origination Date:</strong></td>
-                  <td>05/09/2019</td>
-                </tr>
-                <tr>
-                  <td><strong>As of Date:</strong></td>
-                  <td>Quarter 4 2024</td>
-                </tr>
-                <tr>
-                  <td><strong>Legend:</strong></td>
-                  <td>
-                    <span className="yellow"></span> Gaps &nbsp;
-                    <span className="orange"></span> Reasonableness
-                  </td>
-                </tr>
-              </>
-            )}
-          </tbody>
-        </table>
+        {isCollapsed ? (
+          <div className="collapsed-view">
+            <p><strong>Facility ID:</strong> 00000011100000001000215</p>
+            <p><strong>GCI:</strong> 325200012</p>
+            <p><strong>Obligor Name:</strong> TURNER HILL PARTNERS LLC</p>
+          </div>
+        ) : (
+          <div className="table-view">
+            <div className="row">
+              <div className="cell"><strong>Facility ID:</strong></div>
+              <div className="cell">00000011100000001000215</div>
+            </div>
+            <div className="row">
+              <div className="cell"><strong>GCI:</strong></div>
+              <div className="cell">325200012</div>
+            </div>
+            <div className="row">
+              <div className="cell"><strong>Obligor Name:</strong></div>
+              <div className="cell">TURNER HILL PARTNERS LLC</div>
+            </div>
+            <div className="row">
+              <div className="cell"><strong>SOR:</strong></div>
+              <div className="cell">LIQ</div>
+            </div>
+            <div className="row">
+              <div className="cell"><strong>Origination Date:</strong></div>
+              <div className="cell">05/09/2019</div>
+            </div>
+            <div className="row">
+              <div className="cell"><strong>As of Date:</strong></div>
+              <div className="cell">Quarter 4 2024</div>
+            </div>
+            <div className="row">
+              <div className="cell"><strong>Legend:</strong></div>
+              <div className="cell">
+                <span className="yellow"></span> Gaps &nbsp;
+                <span className="orange"></span> Reasonableness
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
-
-
-
-
-.container {
-  padding: 20px;
-}
-
-.facility-card {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
-}
-
-.collapsed {
-  padding: 10px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-td {
-  padding: 10px;
-  border: 1px solid #ddd;
-}
-
-td strong {
-  font-weight: bold;
-}
-
-.legend {
-  display: flex;
-  align-items: center;
-}
-
-.yellow, .orange {
-  display: inline-block;
-  width: 20px;
-  height: 10px;
-  margin-right: 5px;
-}
-
-.yellow {
-  background: yellow;
-}
-
-.orange {
-  background: orange;
 }
