@@ -1,106 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./ExceptionTable.css";
 
 const ExceptionTable = () => {
   const navigate = useNavigate();
 
-  // Sample row data (based on your image)
-  const [rowData] = useState([
+  // Different datasets
+  const dataSets = {
+    set1: [
+      { facilityId: "000001110000000010000215", gci: "325200012", obligorName: "TURNER HILL PARTNERS LLC", sor: "LIQ", dot2: "JM", dot5: "JMEFA", businessDescription: "CREB EAST - SOUTHEAST", status: "Existing", openItems: 21, completeStatus: "NOT COMPLETE" },
+      { facilityId: "00000119600000001000022", gci: "327207692", obligorName: "GRACE HOSPITALITY LLC", sor: "LIQ", dot2: "JM", dot5: "JMEFA", businessDescription: "CREB EAST - SOUTHEAST", status: "Existing", openItems: 8, completeStatus: "NOT COMPLETE" }
+    ],
+    set2: [
+      { facilityId: "00000128000000001000056", gci: "327792404", obligorName: "VAIL MANOR DEVELOPERS L.L.C.", sor: "LIQ", dot2: "JM", dot5: "JMEJA", businessDescription: "CREB EAST - NY/NJ", status: "Existing", openItems: 6, completeStatus: "NOT COMPLETE" },
+      { facilityId: "00000132100000010099715", gci: "328314168", obligorName: "BERLEY DAVID I", sor: "LIQ", dot2: "TA", dot5: "TADGD", businessDescription: "PB-NYT-MIDTOWN EAST-NM", status: "Existing", openItems: 9, completeStatus: "NOT COMPLETE" }
+    ],
+    set3: [
+      { facilityId: "00000154000000001000183", gci: "335530412", obligorName: "FOUNTAINS AT MILLENIA III LLLP", sor: "LIQ", dot2: "JM", dot5: "JMIAA", businessDescription: "CDB - SOUTH", status: "Existing", openItems: 6, completeStatus: "NOT COMPLETE" },
+      { facilityId: "00000154000000001000184", gci: "335558282", obligorName: "FOUNTAINS AT MILLENIA IV LLLP", sor: "LIQ", dot2: "JM", dot5: "JMIAA", businessDescription: "CDB - SOUTH", status: "Existing", openItems: 6, completeStatus: "NOT COMPLETE" }
+    ]
+  };
+
+  const [rowData, setRowData] = useState(dataSets.set1); // Default dataset
+
+  // Column Definitions
+  const columnDefs = useMemo(() => [
     {
-      facilityId: "000001110000000010000215",
-      gci: "325200012",
-      obligorName: "TURNER HILL PARTNERS LLC",
-      sor: "LIQ",
-      dot2: "JM",
-      dot5: "JMEFA",
-      businessDescription: "CREB EAST - SOUTHEAST",
-      status: "Existing",
-      openItems: 21,
-      completeStatus: "NOT COMPLETE",
+      headerName: "Facility ID",
+      field: "facilityId",
+      sortable: true,
+      filter: "agTextColumnFilter",
+      cellRenderer: (params) => (
+        <span
+          className="clickable-link"
+          onClick={() => navigate(`/facilityDetails/${params.value}`)}
+        >
+          {params.value}
+        </span>
+      ),
     },
-    {
-      facilityId: "00000119600000001000022",
-      gci: "327207692",
-      obligorName: "GRACE HOSPITALITY LLC",
-      sor: "LIQ",
-      dot2: "JM",
-      dot5: "JMEFA",
-      businessDescription: "CREB EAST - SOUTHEAST",
-      status: "Existing",
-      openItems: 8,
-      completeStatus: "NOT COMPLETE",
-    },
-    {
-      facilityId: "00000128000000001000056",
-      gci: "327792404",
-      obligorName: "VAIL MANOR DEVELOPERS L.L.C.",
-      sor: "LIQ",
-      dot2: "JM",
-      dot5: "JMEJA",
-      businessDescription: "CREB EAST - NY/NJ",
-      status: "Existing",
-      openItems: 6,
-      completeStatus: "NOT COMPLETE",
-    },
-  ]);
+    { headerName: "GCI", field: "gci", sortable: true, filter: "agTextColumnFilter" },
+    { headerName: "Obligor Name", field: "obligorName", sortable: true, filter: "agTextColumnFilter" },
+    { headerName: "SOR", field: "sor", sortable: true, filter: "agTextColumnFilter" },
+    { headerName: "2 Dot", field: "dot2", sortable: true, filter: "agTextColumnFilter" },
+    { headerName: "5 Dot", field: "dot5", sortable: true, filter: "agTextColumnFilter" },
+    { headerName: "Line of Business Description", field: "businessDescription", sortable: true, filter: "agTextColumnFilter" },
+    { headerName: "Status", field: "status", sortable: true, filter: "agTextColumnFilter" },
+    { headerName: "Open Items", field: "openItems", sortable: true, filter: "agNumberColumnFilter" },
+    { headerName: "Complete Status", field: "completeStatus", sortable: true, filter: "agTextColumnFilter" }
+  ], [navigate]);
 
   return (
     <div className="exception-table-container">
       <h2>Exception Search</h2>
-      
-      {/* Search Bar */}
-      <div className="search-container">
-        <select className="search-input">
-          <option>Exception Queue</option>
-        </select>
-        <input type="text" placeholder="Facility ID" className="search-input" />
-        <input type="text" placeholder="GCI" className="search-input" />
-        <input type="text" placeholder="Obligor Name" className="search-input" />
-        <input type="text" placeholder="Line of Business Description" className="search-input" />
+
+      {/* Buttons to switch datasets */}
+      <div className="button-container">
+        <button onClick={() => setRowData(dataSets.set1)}>Dataset 1</button>
+        <button onClick={() => setRowData(dataSets.set2)}>Dataset 2</button>
+        <button onClick={() => setRowData(dataSets.set3)}>Dataset 3</button>
       </div>
 
-      {/* Table */}
-      <div className="table-container">
-        <table className="styled-table">
-          <thead>
-            <tr>
-              <th>Facility ID</th>
-              <th>GCI</th>
-              <th>Obligor Name</th>
-              <th>SOR</th>
-              <th>2 Dot</th>
-              <th>5 Dot</th>
-              <th>Line of Business Description</th>
-              <th>Status</th>
-              <th>Open Items</th>
-              <th>Complete Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rowData.map((row, index) => (
-              <tr key={index}>
-                <td>
-                  <span 
-                    className="clickable-link"
-                    onClick={() => navigate(`/facilityDetails/${row.facilityId}`)}
-                  >
-                    {row.facilityId}
-                  </span>
-                </td>
-                <td>{row.gci}</td>
-                <td>{row.obligorName}</td>
-                <td>{row.sor}</td>
-                <td>{row.dot2}</td>
-                <td>{row.dot5}</td>
-                <td>{row.businessDescription}</td>
-                <td>{row.status}</td>
-                <td>{row.openItems}</td>
-                <td>{row.completeStatus}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* AG Grid Table */}
+      <div className="ag-theme-alpine table-container">
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={columnDefs}
+          pagination={true}
+          paginationPageSize={5}
+          domLayout="autoHeight"
+          defaultColDef={{ resizable: true, filter: true, sortable: true }}
+        />
       </div>
     </div>
   );
