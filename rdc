@@ -346,3 +346,28 @@ Updated Workflow
 
 With this setup, the content for each tab is dynamic, matching the table-like structure shown in your attachment.
 This setup provides a flexible and scalable React-based application to meet your requirements!
+
+
+
+function _observeResize(beans, element, callback) {
+    const win = _getWindow(beans);
+    const ResizeObserverImpl = win.ResizeObserver;
+    let lastWidth = 0, lastHeight = 0;
+
+    const resizeObserver = ResizeObserverImpl ? new ResizeObserverImpl(entries => {
+        requestAnimationFrame(() => {
+            for (let entry of entries) {
+                const { width, height } = entry.contentRect;
+                if (width !== lastWidth || height !== lastHeight) {
+                    lastWidth = width;
+                    lastHeight = height;
+                    callback(entry);
+                }
+            }
+        });
+    }) : null;
+
+    resizeObserver?.observe(element);
+
+    return () => resizeObserver?.disconnect();
+}
