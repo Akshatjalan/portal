@@ -1,0 +1,136 @@
+import React, { useState } from "react";
+import "./TableComponent.css";
+
+const TableComponent = () => {
+  const [activeTab, setActiveTab] = useState("details");
+
+  const facilityData = {
+    "Facility ID": "00000111000000010000215",
+    "Origination Date": "05/09/2023",
+    "Status": "Existing",
+    "Obligor Name": "TURNER HILL PARTNERS LLC",
+    "GCI": "325200012",
+    "SOR": "LIQ",
+    "As of Date": "Quarter 3 2024",
+    "Legend": "Yellow Gaps, Orange Reasonableness",
+  };
+
+  const tabs = [
+    { id: "details", name: "Details", content: "Facility details go here" },
+    { id: "analytics", name: "Analytics", content: "Analytics content" },
+    { id: "documents", name: "Documents", content: "Documents list here" },
+  ];
+
+  const rightPanelContent = [
+    { id: "history", title: "History", content: "History details here" },
+    { id: "audit", title: "Audit Log", content: "Audit logs go here" },
+  ];
+
+  return (
+    <div className="layout-container">
+      {/* Left Accordion Panel */}
+      <div className="accordion left-panel">
+        <div className="accordion-header">Facility Details</div>
+        <div className="accordion-content">
+          {Object.entries(facilityData).map(([key, value]) => (
+            <div key={key} className="detail-item">
+              <strong>{key}:</strong> {value}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Middle Panel with Tabs */}
+      <div className="main-content">
+        <div className="tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={activeTab === tab.id ? "active-tab" : ""}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </div>
+        <div className="tab-content">
+          {tabs.find((tab) => tab.id === activeTab)?.content}
+        </div>
+      </div>
+
+      {/* Right Accordion Panel */}
+      <div className="accordion right-panel">
+        {rightPanelContent.map((item) => (
+          <div key={item.id} className="accordion-section">
+            <div className="accordion-header">{item.title}</div>
+            <div className="accordion-content">{item.content}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TableComponent;
+
+
+.layout-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.accordion {
+  width: 20%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.left-panel {
+  background-color: #f9f9f9;
+}
+
+.right-panel {
+  background-color: #f3f3f3;
+}
+
+.accordion-header {
+  background-color: #ddd;
+  padding: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.accordion-content {
+  padding: 10px;
+}
+
+.main-content {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #ddd;
+}
+
+.tabs button {
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: gray;
+  color: white;
+  flex: 1;
+}
+
+.tabs button.active-tab {
+  background-color: blue;
+}
+
+.tab-content {
+  padding: 10px;
+}
+
