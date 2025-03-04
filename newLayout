@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "./TableComponent.css";
 
 const TableComponent = () => {
+  const [isLeftOpen, setIsLeftOpen] = useState(true);
+  const [isRightOpen, setIsRightOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("details");
 
   const facilityData = {
@@ -29,15 +31,20 @@ const TableComponent = () => {
   return (
     <div className="layout-container">
       {/* Left Accordion Panel */}
-      <div className="accordion left-panel">
-        <div className="accordion-header">Facility Details</div>
-        <div className="accordion-content">
-          {Object.entries(facilityData).map(([key, value]) => (
-            <div key={key} className="detail-item">
-              <strong>{key}:</strong> {value}
-            </div>
-          ))}
-        </div>
+      <div className={`accordion left-panel ${isLeftOpen ? "open" : "collapsed"}`}>
+        <button className="accordion-toggle" onClick={() => setIsLeftOpen(!isLeftOpen)}>
+          {isLeftOpen ? "<<" : ">>"}
+        </button>
+        {isLeftOpen && (
+          <div className="accordion-content">
+            <h3>Facility Details</h3>
+            {Object.entries(facilityData).map(([key, value]) => (
+              <div key={key} className="detail-item">
+                <strong>{key}:</strong> {value}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Middle Panel with Tabs */}
@@ -59,13 +66,20 @@ const TableComponent = () => {
       </div>
 
       {/* Right Accordion Panel */}
-      <div className="accordion right-panel">
-        {rightPanelContent.map((item) => (
-          <div key={item.id} className="accordion-section">
-            <div className="accordion-header">{item.title}</div>
-            <div className="accordion-content">{item.content}</div>
+      <div className={`accordion right-panel ${isRightOpen ? "open" : "collapsed"}`}>
+        <button className="accordion-toggle" onClick={() => setIsRightOpen(!isRightOpen)}>
+          {isRightOpen ? ">>" : "<<"}
+        </button>
+        {isRightOpen && (
+          <div className="accordion-content">
+            {rightPanelContent.map((item) => (
+              <div key={item.id} className="accordion-section">
+                <h3>{item.title}</h3>
+                <p>{item.content}</p>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -74,9 +88,10 @@ const TableComponent = () => {
 export default TableComponent;
 
 
+
 .layout-container {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   padding: 20px;
 }
 
@@ -84,22 +99,29 @@ export default TableComponent;
   width: 20%;
   border: 1px solid #ccc;
   border-radius: 5px;
+  background-color: #f9f9f9;
+  transition: width 0.3s ease-in-out;
+  position: relative;
+}
+
+.accordion-toggle {
+  position: absolute;
+  top: 10px;
+  right: -15px;
+  background-color: #555;
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.accordion.collapsed {
+  width: 30px;
   overflow: hidden;
 }
 
-.left-panel {
-  background-color: #f9f9f9;
-}
-
-.right-panel {
-  background-color: #f3f3f3;
-}
-
-.accordion-header {
-  background-color: #ddd;
-  padding: 10px;
-  font-weight: bold;
-  text-align: center;
+.accordion.open {
+  width: 20%;
 }
 
 .accordion-content {
@@ -133,4 +155,3 @@ export default TableComponent;
 .tab-content {
   padding: 10px;
 }
-
